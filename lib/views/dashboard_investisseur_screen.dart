@@ -10,6 +10,7 @@ import '../widgets/stat_card.dart';
 import 'detail_production_screen.dart';
 import 'historique_investissements_screen.dart';
 import 'notifications_screen.dart';
+import 'productions_investisseur_screen.dart';
 
 /// Dashboard pour les investisseurs
 class DashboardInvestisseurScreen extends StatefulWidget {
@@ -24,8 +25,14 @@ class _DashboardInvestisseurScreenState
     extends State<DashboardInvestisseurScreen> {
   int _currentIndex = 0;
 
-  final List<Widget> _screens = [
-    const _HomeTab(),
+  List<Widget> get _screens => [
+    _HomeTab(
+      onTabChanged: (index) {
+        setState(() {
+          _currentIndex = index;
+        });
+      },
+    ),
     const _ProductionsTab(),
     const _InvestissementsTab(),
     const _ProfileTab(),
@@ -66,7 +73,9 @@ class _DashboardInvestisseurScreenState
 
 /// Onglet Accueil
 class _HomeTab extends StatelessWidget {
-  const _HomeTab();
+  final Function(int) onTabChanged;
+
+  const _HomeTab({required this.onTabChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -193,7 +202,12 @@ class _HomeTab extends StatelessWidget {
                     child: PrimaryButton(
                       text: 'Voir les productions',
                       onPressed: () {
-                        // Changer vers l'onglet productions
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (context) =>
+                                const ProductionsInvestisseurScreen(),
+                          ),
+                        );
                       },
                       icon: Icons.search,
                     ),
@@ -236,6 +250,7 @@ class _HomeTab extends StatelessWidget {
                   TextButton(
                     onPressed: () {
                       // Changer vers l'onglet productions
+                      onTabChanged(1); // Index de l'onglet Productions
                     },
                     child: const Text(
                       'Voir tout',
