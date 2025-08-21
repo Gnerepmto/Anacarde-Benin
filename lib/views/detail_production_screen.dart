@@ -67,6 +67,13 @@ class _DetailProductionScreenState extends State<DetailProductionScreen> {
 
                   const SizedBox(height: 24),
 
+                  // Informations d'investissement (pour les investisseurs)
+                  if (context.read<AuthProvider>().currentUser?.userType ==
+                      UserType.investisseur)
+                    _buildInvestmentSection(),
+
+                  const SizedBox(height: 24),
+
                   // Statistiques
                   _buildStatsSection(),
 
@@ -546,6 +553,157 @@ class _DetailProductionScreenState extends State<DetailProductionScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  Widget _buildInvestmentSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Informations d\'investissement',
+          style: TextStyle(
+            fontSize: 18,
+            fontWeight: FontWeight.bold,
+            color: AppColors.textPrimary,
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Grille d'informations d'investissement
+        GridView.count(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          crossAxisCount: 2,
+          crossAxisSpacing: 16,
+          mainAxisSpacing: 16,
+          childAspectRatio: 2.2,
+          children: [
+            _buildDetailCard(
+              icon: Icons.trending_up,
+              label: 'Production annuelle',
+              value: widget.production.quantiteAnnuelleFormatee,
+              color: AppColors.primary,
+            ),
+            _buildDetailCard(
+              icon: Icons.attach_money,
+              label: 'Montant recherché',
+              value: widget.production.montantInvestissementFormate,
+              color: AppColors.success,
+            ),
+            _buildDetailCard(
+              icon: Icons.agriculture,
+              label: 'Hectares anacardiers',
+              value: widget.production.hectaresAnacardiersFormate,
+              color: AppColors.info,
+            ),
+            _buildDetailCard(
+              icon: Icons.landscape,
+              label: 'Hectares totaux',
+              value: widget.production.hectaresTotauxFormate,
+              color: AppColors.secondary,
+            ),
+          ],
+        ),
+
+        const SizedBox(height: 16),
+
+        // Modalités de remboursement
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.textLight.withOpacity(0.2)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Modalités de remboursement',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                widget.production.modalitesRemboursement,
+                style: const TextStyle(
+                  fontSize: 14,
+                  color: AppColors.textSecondary,
+                  height: 1.4,
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        const SizedBox(height: 16),
+
+        // Informations de contact
+        Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.surface,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppColors.textLight.withOpacity(0.2)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Contact du producteur',
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.phone,
+                    size: 20,
+                    color: AppColors.textSecondary,
+                  ),
+                  const SizedBox(width: 8),
+                  Text(
+                    widget.production.telephone,
+                    style: const TextStyle(
+                      fontSize: 14,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(
+                    Icons.location_on,
+                    size: 20,
+                    color: AppColors.textSecondary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      widget.production.adresse,
+                      style: const TextStyle(
+                        fontSize: 14,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

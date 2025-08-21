@@ -46,6 +46,14 @@ class ProductionProvider extends ChangeNotifier {
     required DateTime dateRecolte,
     String? imageUrl,
     List<String> tags = const [],
+    // Nouveaux champs
+    required double quantiteAnnuelle,
+    required double hectaresAnacardiers,
+    required double hectaresTotaux,
+    required double montantInvestissement,
+    required String modalitesRemboursement,
+    required String telephone,
+    required String adresse,
   }) async {
     _isLoading = true;
     notifyListeners();
@@ -70,6 +78,14 @@ class ProductionProvider extends ChangeNotifier {
         datePublication: DateTime.now(),
         status: ProductionStatus.enAttente,
         tags: tags,
+        // Nouveaux champs
+        quantiteAnnuelle: quantiteAnnuelle,
+        hectaresAnacardiers: hectaresAnacardiers,
+        hectaresTotaux: hectaresTotaux,
+        montantInvestissement: montantInvestissement,
+        modalitesRemboursement: modalitesRemboursement,
+        telephone: telephone,
+        adresse: adresse,
       );
 
       _productions.add(nouvelleProduction);
@@ -195,6 +211,15 @@ class ProductionProvider extends ChangeNotifier {
         tags: ['bio', 'premium'],
         vues: 45,
         investisseursInteresses: 3,
+        // Nouveaux champs
+        quantiteAnnuelle: 2000.0,
+        hectaresAnacardiers: 5.0,
+        hectaresTotaux: 8.0,
+        montantInvestissement: 500000.0,
+        modalitesRemboursement:
+            'Remboursement sur 2 ans avec 8% d\'intérêt annuel',
+        telephone: '+229 90 12 34 56',
+        adresse: 'Quartier Zongo, Parakou, Bénin',
       ),
       ProductionModel(
         id: '2',
@@ -216,6 +241,15 @@ class ProductionProvider extends ChangeNotifier {
         tags: ['transforme', 'grille'],
         vues: 32,
         investisseursInteresses: 2,
+        // Nouveaux champs
+        quantiteAnnuelle: 1500.0,
+        hectaresAnacardiers: 3.5,
+        hectaresTotaux: 6.0,
+        montantInvestissement: 350000.0,
+        modalitesRemboursement:
+            'Remboursement sur 18 mois avec 6% d\'intérêt annuel',
+        telephone: '+229 97 65 43 21',
+        adresse: 'Avenue Steinmetz, Cotonou, Bénin',
       ),
       ProductionModel(
         id: '3',
@@ -237,6 +271,15 @@ class ProductionProvider extends ChangeNotifier {
         tags: ['coque', 'stockage'],
         vues: 12,
         investisseursInteresses: 0,
+        // Nouveaux champs
+        quantiteAnnuelle: 3000.0,
+        hectaresAnacardiers: 7.0,
+        hectaresTotaux: 10.0,
+        montantInvestissement: 750000.0,
+        modalitesRemboursement:
+            'Remboursement sur 3 ans avec 10% d\'intérêt annuel',
+        telephone: '+229 90 12 34 56',
+        adresse: 'Zone Industrielle, Parakou, Bénin',
       ),
     ];
   }

@@ -18,6 +18,15 @@ class ProductionModel {
   final int vues;
   final int investisseursInteresses;
 
+  // Nouveaux champs pour l'investissement
+  final double quantiteAnnuelle; // Quantité de noix produite par an
+  final double hectaresAnacardiers; // Nombre d'hectares d'anacardiers
+  final double hectaresTotaux; // Nombre total d'hectares possédés
+  final double montantInvestissement; // Montant d'investissement recherché
+  final String modalitesRemboursement; // Modalités de remboursement
+  final String telephone; // Numéro de téléphone
+  final String adresse; // Adresse complète
+
   ProductionModel({
     required this.id,
     required this.producteurId,
@@ -36,6 +45,14 @@ class ProductionModel {
     required this.tags,
     this.vues = 0,
     this.investisseursInteresses = 0,
+    // Nouveaux champs
+    required this.quantiteAnnuelle,
+    required this.hectaresAnacardiers,
+    required this.hectaresTotaux,
+    required this.montantInvestissement,
+    required this.modalitesRemboursement,
+    required this.telephone,
+    required this.adresse,
   });
 
   factory ProductionModel.fromJson(Map<String, dynamic> json) {
@@ -59,6 +76,14 @@ class ProductionModel {
       tags: List<String>.from(json['tags']),
       vues: json['vues'] ?? 0,
       investisseursInteresses: json['investisseursInteresses'] ?? 0,
+      // Nouveaux champs
+      quantiteAnnuelle: json['quantiteAnnuelle']?.toDouble() ?? 0.0,
+      hectaresAnacardiers: json['hectaresAnacardiers']?.toDouble() ?? 0.0,
+      hectaresTotaux: json['hectaresTotaux']?.toDouble() ?? 0.0,
+      montantInvestissement: json['montantInvestissement']?.toDouble() ?? 0.0,
+      modalitesRemboursement: json['modalitesRemboursement'] ?? '',
+      telephone: json['telephone'] ?? '',
+      adresse: json['adresse'] ?? '',
     );
   }
 
@@ -81,6 +106,14 @@ class ProductionModel {
       'tags': tags,
       'vues': vues,
       'investisseursInteresses': investisseursInteresses,
+      // Nouveaux champs
+      'quantiteAnnuelle': quantiteAnnuelle,
+      'hectaresAnacardiers': hectaresAnacardiers,
+      'hectaresTotaux': hectaresTotaux,
+      'montantInvestissement': montantInvestissement,
+      'modalitesRemboursement': modalitesRemboursement,
+      'telephone': telephone,
+      'adresse': adresse,
     };
   }
 
@@ -102,6 +135,14 @@ class ProductionModel {
     List<String>? tags,
     int? vues,
     int? investisseursInteresses,
+    // Nouveaux champs
+    double? quantiteAnnuelle,
+    double? hectaresAnacardiers,
+    double? hectaresTotaux,
+    double? montantInvestissement,
+    String? modalitesRemboursement,
+    String? telephone,
+    String? adresse,
   }) {
     return ProductionModel(
       id: id ?? this.id,
@@ -122,6 +163,16 @@ class ProductionModel {
       vues: vues ?? this.vues,
       investisseursInteresses:
           investisseursInteresses ?? this.investisseursInteresses,
+      // Nouveaux champs
+      quantiteAnnuelle: quantiteAnnuelle ?? this.quantiteAnnuelle,
+      hectaresAnacardiers: hectaresAnacardiers ?? this.hectaresAnacardiers,
+      hectaresTotaux: hectaresTotaux ?? this.hectaresTotaux,
+      montantInvestissement:
+          montantInvestissement ?? this.montantInvestissement,
+      modalitesRemboursement:
+          modalitesRemboursement ?? this.modalitesRemboursement,
+      telephone: telephone ?? this.telephone,
+      adresse: adresse ?? this.adresse,
     );
   }
 
@@ -133,6 +184,19 @@ class ProductionModel {
 
   /// Formate la quantité pour l'affichage
   String get quantiteFormatee => '${quantite.toStringAsFixed(1)} $unite';
+
+  /// Formate le montant d'investissement pour l'affichage
+  String get montantInvestissementFormate =>
+      '${montantInvestissement.toStringAsFixed(0)} $devise';
+
+  /// Formate la quantité annuelle pour l'affichage
+  String get quantiteAnnuelleFormatee =>
+      '${quantiteAnnuelle.toStringAsFixed(1)} $unite/an';
+
+  /// Formate les hectares pour l'affichage
+  String get hectaresAnacardiersFormate =>
+      '${hectaresAnacardiers.toStringAsFixed(1)} ha';
+  String get hectaresTotauxFormate => '${hectaresTotaux.toStringAsFixed(1)} ha';
 }
 
 /// Statuts de production
@@ -143,4 +207,3 @@ enum ProductionStatus {
   vendue, // Vendu
   rejetee, // Rejetée par l'admin
 }
-
