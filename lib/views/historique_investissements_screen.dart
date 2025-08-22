@@ -56,22 +56,35 @@ class _HistoriqueInvestissementsScreenState
   }
 
   Widget _buildFilterChip(String label, String value) {
+    final isFiltered = value != 'Tous';
+    
     return InkWell(
       onTap: _showStatusFilter,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
         decoration: BoxDecoration(
-          color: AppColors.surface,
+          color: isFiltered ? AppColors.secondary.withValues(alpha: 0.1) : AppColors.surface,
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: AppColors.textLight.withOpacity(0.3)),
+          border: Border.all(
+            color: isFiltered 
+                ? AppColors.secondary.withValues(alpha: 0.3)
+                : AppColors.textLight.withValues(alpha: 0.3),
+          ),
         ),
         child: Row(
           children: [
+            Icon(
+              isFiltered ? Icons.filter_list : Icons.filter_list_outlined,
+              size: 16,
+              color: isFiltered ? AppColors.secondary : AppColors.textSecondary,
+            ),
+            const SizedBox(width: 8),
             Text(
               '$label: $value',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
-                color: AppColors.textPrimary,
+                color: isFiltered ? AppColors.secondary : AppColors.textPrimary,
+                fontWeight: isFiltered ? FontWeight.w600 : FontWeight.normal,
               ),
             ),
             const Spacer(),
@@ -84,31 +97,40 @@ class _HistoriqueInvestissementsScreenState
 
   Widget _buildInvestissementsList() {
     // Simuler des données d'investissements
-    final investissements = _getMockInvestissements();
+    final allInvestissements = _getMockInvestissements();
+    
+    // Filtrer les investissements selon le statut sélectionné
+    final investissements = _getFilteredInvestissements(allInvestissements);
 
     if (investissements.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(
-              Icons.trending_up_outlined,
+              _selectedStatus == 'Tous' 
+                  ? Icons.trending_up_outlined 
+                  : Icons.filter_list_off,
               size: 80,
               color: AppColors.textLight,
             ),
-            SizedBox(height: 24),
+            const SizedBox(height: 24),
             Text(
-              'Aucun investissement',
-              style: TextStyle(
+              _selectedStatus == 'Tous' 
+                  ? 'Aucun investissement'
+                  : 'Aucun investissement ${_getStatusText(_selectedStatus).toLowerCase()}',
+              style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
                 color: AppColors.textPrimary,
               ),
             ),
-            SizedBox(height: 8),
+            const SizedBox(height: 8),
             Text(
-              'Vous n\'avez pas encore effectué d\'investissements',
-              style: TextStyle(fontSize: 16, color: AppColors.textSecondary),
+              _selectedStatus == 'Tous'
+                  ? 'Vous n\'avez pas encore effectué d\'investissements'
+                  : 'Aucun investissement ne correspond au statut sélectionné',
+              style: const TextStyle(fontSize: 16, color: AppColors.textSecondary),
               textAlign: TextAlign.center,
             ),
           ],
@@ -357,59 +379,52 @@ class _HistoriqueInvestissementsScreenState
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Text(
-              'Filtrer par statut',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                const Icon(Icons.filter_list, color: AppColors.secondary),
+                const SizedBox(width: 8),
+                const Text(
+                  'Filtrer par statut',
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ],
             ),
             const SizedBox(height: 16),
-            ListTile(
-              title: const Text('Tous'),
-              onTap: () {
-                setState(() {
-                  _selectedStatus = 'Tous';
-                });
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: const Text('En attente'),
-              onTap: () {
-                setState(() {
-                  _selectedStatus = 'En attente';
-                });
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: const Text('Validés'),
-              onTap: () {
-                setState(() {
-                  _selectedStatus = 'Validés';
-                });
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: const Text('Terminés'),
-              onTap: () {
-                setState(() {
-                  _selectedStatus = 'Terminés';
-                });
-                Navigator.pop(context);
-              },
-            ),
-            ListTile(
-              title: const Text('Annulés'),
-              onTap: () {
-                setState(() {
-                  _selectedStatus = 'Annulés';
-                });
-                Navigator.pop(context);
-              },
-            ),
+            _buildStatusOption('Tous', Icons.list),
+            _buildStatusOption('En attente', Icons.schedule),
+            _buildStatusOption('Validés', Icons.check_circle),
+            _buildStatusOption('Terminés', Icons.done_all),
+            _buildStatusOption('Annulés', Icons.cancel),
           ],
         ),
       ),
+    );
+  }
+
+  Widget _buildStatusOption(String status, IconData icon) {
+    final isSelected = _selectedStatus == status;
+    
+    return ListTile(
+      leading: Icon(
+        icon,
+        color: isSelected ? AppColors.secondary : AppColors.textSecondary,
+      ),
+      title: Text(
+        status,
+        style: TextStyle(
+          fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+          color: isSelected ? AppColors.secondary : AppColors.textPrimary,
+        ),
+      ),
+      trailing: isSelected 
+          ? const Icon(Icons.check, color: AppColors.secondary)
+          : null,
+      onTap: () {
+        setState(() {
+          _selectedStatus = status;
+        });
+        Navigator.pop(context);
+      },
     );
   }
 
@@ -456,6 +471,49 @@ class _HistoriqueInvestissementsScreenState
         unite: 'kg',
       ),
     ];
+  }
+
+  /// Filtre les investissements selon le statut sélectionné
+  List<InvestissementModel> _getFilteredInvestissements(List<InvestissementModel> investissements) {
+    if (_selectedStatus == 'Tous') {
+      return investissements;
+    }
+
+    return investissements.where((investissement) {
+      final statusText = _getStatusText(_selectedStatus);
+      final investissementStatusText = _getStatusTextFromEnum(investissement.status);
+      return statusText == investissementStatusText;
+    }).toList();
+  }
+
+  /// Convertit le statut sélectionné en texte
+  String _getStatusText(String selectedStatus) {
+    switch (selectedStatus) {
+      case 'En attente':
+        return 'En attente';
+      case 'Validés':
+        return 'Validé';
+      case 'Terminés':
+        return 'Terminé';
+      case 'Annulés':
+        return 'Annulé';
+      default:
+        return selectedStatus;
+    }
+  }
+
+  /// Convertit l'enum InvestissementStatus en texte
+  String _getStatusTextFromEnum(InvestissementStatus status) {
+    switch (status) {
+      case InvestissementStatus.enAttente:
+        return 'En attente';
+      case InvestissementStatus.valide:
+        return 'Validé';
+      case InvestissementStatus.termine:
+        return 'Terminé';
+      case InvestissementStatus.annule:
+        return 'Annulé';
+    }
   }
 }
 

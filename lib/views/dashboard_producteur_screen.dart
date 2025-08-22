@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:projetc/models/user_model.dart';
+import 'package:projetc/views/choix_profil_screen.dart';
+import 'package:projetc/views/login_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/production_provider.dart';
@@ -6,6 +9,7 @@ import '../views/colors/app_colors.dart';
 import '../widgets/primary_button.dart';
 import '../widgets/production_card.dart';
 import '../widgets/stat_card.dart';
+import 'productions_investisseur_screen.dart';
 import 'publication_production_screen.dart';
 import 'formations_screen.dart';
 import 'notifications_screen.dart';
@@ -154,7 +158,7 @@ class _HomeTab extends StatelessWidget {
                     crossAxisCount: 2,
                     crossAxisSpacing: 24,
                     mainAxisSpacing: 24,
-                    childAspectRatio: 0.8,
+                    childAspectRatio: 1.4,
                     children: [
                       StatCard(
                         title: 'Productions',
@@ -451,9 +455,48 @@ class _FormationsTab extends StatelessWidget {
   }
 }
 
+
 /// Onglet Profil
-class _ProfileTab extends StatelessWidget {
+class _ProfileTab extends StatefulWidget {
   const _ProfileTab();
+
+  @override
+  State<_ProfileTab> createState() => _ProfileTabState();
+}
+
+class _ProfileTabState extends State<_ProfileTab> with SingleTickerProviderStateMixin {
+
+  UserType? _selectedType;
+  late AnimationController _animationController;
+  late Animation<double> _scaleAnimation;
+
+
+  void _selectType(UserType type) {
+    setState(() {
+      _selectedType = type;
+    });
+    _animationController.forward().then((_) {
+      _animationController.reverse();
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 300),
+      vsync: this,
+    );
+    _scaleAnimation = Tween<double>(begin: 1.0, end: 0.95).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeInOut),
+    );
+  }
+
+  @override
+  void dispose() {
+    _animationController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -473,7 +516,13 @@ class _ProfileTab extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.logout, color: AppColors.textPrimary),
             onPressed: () {
-              Provider.of<AuthProvider>(context, listen: false).logout();
+
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) =>  ChoixProfilScreen()),
+                (route) => false,
+              );
+              //Provider.of<AuthProvider>(context, listen: false).logout();
             },
           ),
         ],
@@ -537,7 +586,36 @@ class _ProfileTab extends StatelessWidget {
                   icon: Icons.edit,
                   title: 'Modifier le profil',
                   onTap: () {
-                    // Naviguer vers la modification du profil
+                    showModalBottomSheet(
+                      context: context,
+                      builder: (context) {
+                        return const Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              'Modifier le profil',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            SizedBox(height: 16),
+                            TextField(
+                              decoration: InputDecoration(
+                                labelText: 'Nom',
+                                border: OutlineInputBorder(),
+                              ), ),
+                        SizedBox(height: 16),
+                            TextField(
+                              decoration: InputDecoration(
+                                labelText: 'Prénom',
+                                border: OutlineInputBorder(),
+                              ),
+                            )
+                          ],
+                        );
+                      },
+                    );
                   },
                 ),
 
@@ -562,6 +640,19 @@ class _ProfileTab extends StatelessWidget {
                   title: 'À propos',
                   onTap: () {
                     // Naviguer vers les informations
+                  },
+
+                ),
+
+                _buildProfileOption(
+                  icon: Icons.view_agenda,
+                  title: 'Voir mes publications',
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) => const ProductionsInvestisseurScreen(),
+                      ),
+                    );
                   },
                 ),
               ],

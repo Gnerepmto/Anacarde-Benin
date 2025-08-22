@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:projetc/views/choix_profil_screen.dart';
 import 'package:provider/provider.dart';
 import '../providers/auth_provider.dart';
 import '../providers/production_provider.dart';
@@ -152,7 +153,7 @@ class _HomeTab extends StatelessWidget {
                 crossAxisCount: 2,
                 crossAxisSpacing: 14,
                 mainAxisSpacing: 10,
-                childAspectRatio: 0.95,
+                childAspectRatio: 1.5,
                 children: [
                   StatCard(
                     title: 'Investissements',
@@ -171,6 +172,7 @@ class _HomeTab extends StatelessWidget {
                     value: '450k FCFA',
                     icon: Icons.attach_money,
                     color: AppColors.success,
+                    valueFontSize: 12,
                   ),
                   StatCard(
                     title: 'Productions suivies',
@@ -345,26 +347,58 @@ class _ProductionsTab extends StatefulWidget {
 class _ProductionsTabState extends State<_ProductionsTab> {
   String _selectedCategory = 'Toutes';
   String _selectedStatus = 'Toutes';
+  String _searchQuery = '';
+  bool _isSearching = false;
+  final TextEditingController _searchController = TextEditingController();
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
-        title: const Text(
-          'Productions',
-          style: TextStyle(
-            color: AppColors.textPrimary,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
+        title: _isSearching
+            ? _buildSearchField()
+            : const Text(
+                'Productions',
+                style: TextStyle(
+                  color: AppColors.textPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
         backgroundColor: AppColors.surface,
         elevation: 0,
         actions: [
-          IconButton(
-            icon: const Icon(Icons.filter_list, color: AppColors.secondary),
-            onPressed: _showFilterDialog,
-          ),
+          if (!_isSearching) ...[
+            IconButton(
+              icon: const Icon(Icons.search, color: AppColors.secondary),
+              onPressed: () {
+                setState(() {
+                  _isSearching = true;
+                });
+              },
+            ),
+            IconButton(
+              icon: const Icon(Icons.filter_list, color: AppColors.secondary),
+              onPressed: _showFilterDialog,
+            ),
+          ] else ...[
+            IconButton(
+              icon: const Icon(Icons.close, color: AppColors.textSecondary),
+              onPressed: () {
+                setState(() {
+                  _isSearching = false;
+                  _searchQuery = '';
+                  _searchController.clear();
+                });
+              },
+            ),
+          ],
         ],
       ),
       body: Column(
@@ -397,36 +431,61 @@ class _ProductionsTabState extends State<_ProductionsTab> {
 
                 final productions = productionProvider.productions
                     .where((p) => p.status == ProductionStatus.validee)
+                    .where((p) => _searchQuery.isEmpty || _matchesSearch(p))
                     .toList();
 
                 if (productions.isEmpty) {
-                  return const Center(
+                  return Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.inventory_outlined,
+                          _searchQuery.isNotEmpty
+                              ? Icons.search_off
+                              : Icons.inventory_outlined,
                           size: 80,
                           color: AppColors.textLight,
                         ),
-                        SizedBox(height: 24),
+                        const SizedBox(height: 24),
                         Text(
-                          'Aucune production disponible',
-                          style: TextStyle(
+                          _searchQuery.isNotEmpty
+                              ? 'Aucun résultat trouvé'
+                              : 'Aucune production disponible',
+                          style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
                             color: AppColors.textPrimary,
                           ),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Text(
-                          'Aucune production ne correspond à vos critères',
-                          style: TextStyle(
+                          _searchQuery.isNotEmpty
+                              ? 'Aucune production ne correspond à votre recherche "${_searchQuery}"'
+                              : 'Aucune production ne correspond à vos critères',
+                          style: const TextStyle(
                             fontSize: 16,
                             color: AppColors.textSecondary,
                           ),
                           textAlign: TextAlign.center,
                         ),
+                        if (_searchQuery.isNotEmpty) ...[
+                          const SizedBox(height: 16),
+                          TextButton(
+                            onPressed: () {
+                              setState(() {
+                                _searchQuery = '';
+                                _searchController.clear();
+                              });
+                            },
+                            child: const Text(
+                              'Effacer la recherche',
+                              style: TextStyle(
+                                color: AppColors.secondary,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   );
@@ -526,6 +585,70 @@ class _ProductionsTabState extends State<_ProductionsTab> {
   void _showStatusFilter() {
     // Implémenter le filtre par statut
   }
+
+  Widget _buildSearchField() {
+    return TextField(
+      controller: _searchController,
+      autofocus: true,
+      decoration: InputDecoration(
+        hintText: 'Rechercher une production...',
+        hintStyle: const TextStyle(color: AppColors.textSecondary),
+        border: InputBorder.none,
+        contentPadding: const EdgeInsets.symmetric(horizontal: 0, vertical: 8),
+        suffixIcon: _searchQuery.isNotEmpty
+            ? IconButton(
+                icon: const Icon(Icons.clear, color: AppColors.textSecondary),
+                onPressed: () {
+                  setState(() {
+                    _searchQuery = '';
+                    _searchController.clear();
+                  });
+                },
+              )
+            : null,
+      ),
+      style: const TextStyle(
+        fontSize: 18,
+        fontWeight: FontWeight.w500,
+        color: AppColors.textPrimary,
+      ),
+      onChanged: (value) {
+        setState(() {
+          _searchQuery = value;
+        });
+      },
+      onSubmitted: (value) {
+        setState(() {
+          _searchQuery = value;
+        });
+      },
+    );
+  }
+
+  bool _matchesSearch(ProductionModel production) {
+    if (_searchQuery.isEmpty) return true;
+
+    final query = _searchQuery.toLowerCase();
+
+    // Recherche dans le titre
+    if (production.title.toLowerCase().contains(query)) return true;
+
+    // Recherche dans la description
+    if (production.description.toLowerCase().contains(query)) return true;
+
+    // Recherche dans le nom du producteur
+    if (production.producteurName.toLowerCase().contains(query)) return true;
+
+    // Recherche dans la localisation
+    if (production.localisation.toLowerCase().contains(query)) return true;
+
+    // Recherche dans les tags
+    for (final tag in production.tags) {
+      if (tag.toLowerCase().contains(query)) return true;
+    }
+
+    return false;
+  }
 }
 
 /// Onglet Investissements
@@ -560,7 +683,13 @@ class _ProfileTab extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.logout, color: AppColors.textPrimary),
             onPressed: () {
-              Provider.of<AuthProvider>(context, listen: false).logout();
+              Navigator.pushAndRemoveUntil(
+                context,
+                MaterialPageRoute(builder: (context) =>  ChoixProfilScreen()),
+                    (route) => false,
+              );
+
+              //Provider.of<AuthProvider>(context, listen: false).logout();
             },
           ),
         ],

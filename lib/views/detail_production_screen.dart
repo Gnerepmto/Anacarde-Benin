@@ -494,18 +494,31 @@ class _DetailProductionScreenState extends State<DetailProductionScreen> {
   }
 
   void _investir() async {
+    // Afficher la boîte de dialogue de sélection du moyen de paiement
+    final selectedPaymentMethod = await _showPaymentMethodDialog();
+
+    if (selectedPaymentMethod == null) {
+      // L'utilisateur a annulé la sélection
+      return;
+    }
+
     setState(() {
       _isLoading = true;
     });
 
     try {
-      // Simuler un investissement
+      // Afficher les informations de paiement selon le moyen sélectionné
+      await _showPaymentDetails(selectedPaymentMethod);
+
+      // Simuler un investissement avec le moyen de paiement sélectionné
       await Future.delayed(const Duration(seconds: 2));
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            content: Text('Demande d\'investissement envoyée avec succès !'),
+          SnackBar(
+            content: Text(
+              'Demande d\'investissement envoyée avec succès via $selectedPaymentMethod !',
+            ),
             backgroundColor: AppColors.success,
           ),
         );
@@ -526,6 +539,271 @@ class _DetailProductionScreenState extends State<DetailProductionScreen> {
           _isLoading = false;
         });
       }
+    }
+  }
+
+  Future<String?> _showPaymentMethodDialog() {
+    return showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            const Icon(Icons.payment, color: AppColors.secondary),
+            const SizedBox(width: 8),
+            const Text(
+              'Choisir le moyen de paiement',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text(
+              'Sélectionnez votre moyen de paiement préféré pour procéder à l\'investissement.',
+              style: TextStyle(fontSize: 14, color: AppColors.textSecondary),
+            ),
+            const SizedBox(height: 20),
+            _buildPaymentOption(
+              'Mobile Money',
+              'Paiement via Mobile Money',
+              Icons.phone_android,
+              AppColors.primary,
+            ),
+            const SizedBox(height: 12),
+            _buildPaymentOption(
+              'Moov Money',
+              'Paiement via Moov Money',
+              Icons.account_balance_wallet,
+              AppColors.success,
+            ),
+            const SizedBox(height: 12),
+            _buildPaymentOption(
+              'CeltiisCash',
+              'Paiement via CeltiisCash',
+              Icons.credit_card,
+              AppColors.warning,
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text(
+              'Annuler',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentOption(
+    String title,
+    String subtitle,
+    IconData icon,
+    Color color,
+  ) {
+    return InkWell(
+      onTap: () => Navigator.of(context).pop(title),
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.textLight.withValues(alpha: 0.2)),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Icon(icon, color: color, size: 24),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    title,
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    subtitle,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            Icon(
+              Icons.arrow_forward_ios,
+              size: 16,
+              color: AppColors.textSecondary,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Future<void> _showPaymentDetails(String paymentMethod) async {
+    final montant = widget.production.montantInvestissementFormate;
+    final productionTitle = widget.production.title;
+
+    return showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (context) => AlertDialog(
+        title: Row(
+          children: [
+            Icon(
+              _getPaymentIcon(paymentMethod),
+              color: _getPaymentColor(paymentMethod),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              'Paiement via $paymentMethod',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Récapitulatif de votre investissement :',
+              style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.w600,
+                color: AppColors.textPrimary,
+              ),
+            ),
+            const SizedBox(height: 16),
+            _buildPaymentDetail('Production', productionTitle),
+            const SizedBox(height: 8),
+            _buildPaymentDetail('Montant', montant),
+            const SizedBox(height: 8),
+            _buildPaymentDetail('Moyen de paiement', paymentMethod),
+            const SizedBox(height: 16),
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppColors.secondary.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(
+                  color: AppColors.secondary.withValues(alpha: 0.3),
+                ),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline,
+                    size: 16,
+                    color: AppColors.secondary,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Vous allez être redirigé vers $paymentMethod pour finaliser le paiement.',
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              setState(() {
+                _isLoading = false;
+              });
+            },
+            child: const Text(
+              'Annuler',
+              style: TextStyle(color: AppColors.textSecondary),
+            ),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+            },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: _getPaymentColor(paymentMethod),
+            ),
+            child: const Text(
+              'Continuer',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPaymentDetail(String label, String value) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Text(
+          label,
+          style: const TextStyle(fontSize: 14, color: AppColors.textSecondary),
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: AppColors.textPrimary,
+          ),
+        ),
+      ],
+    );
+  }
+
+  IconData _getPaymentIcon(String paymentMethod) {
+    switch (paymentMethod) {
+      case 'Mobile Money':
+        return Icons.phone_android;
+      case 'Moov Money':
+        return Icons.account_balance_wallet;
+      case 'CeltiisCash':
+        return Icons.credit_card;
+      default:
+        return Icons.payment;
+    }
+  }
+
+  Color _getPaymentColor(String paymentMethod) {
+    switch (paymentMethod) {
+      case 'Mobile Money':
+        return AppColors.primary;
+      case 'Moov Money':
+        return AppColors.success;
+      case 'CeltiisCash':
+        return AppColors.warning;
+      default:
+        return AppColors.secondary;
     }
   }
 

@@ -8,6 +8,7 @@ class StatCard extends StatelessWidget {
   final IconData icon;
   final Color color;
   final VoidCallback? onTap;
+  final double? valueFontSize;
 
   const StatCard({
     super.key,
@@ -15,6 +16,7 @@ class StatCard extends StatelessWidget {
     required this.value,
     required this.icon,
     required this.color,
+    this.valueFontSize,
     this.onTap,
   });
 
@@ -41,27 +43,41 @@ class StatCard extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceAround,
           children: [
             // Icône
-            Container(
-              width: 56,
-              height: 56,
-              decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.2),
-                borderRadius: BorderRadius.circular(14),
-              ),
-              child: Icon(icon, size: 25, color: color),
-            ),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Flexible(
+                  flex: 1,
+                  child: Container(
+                    width: 56,
+                    height: 56,
+                    decoration: BoxDecoration(
+                      color: color.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: Icon(icon, size: 25, color: color),
+                  ),
+                ),
 
 
-            // Valeur
-            Text(
-              value,
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: color,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis
+                // Valeur
+                Flexible(
+                  child: Padding(
+                    padding: const EdgeInsets.only(right: 8.0),
+                    child: Text(
+                      value,
+                      style: TextStyle(
+                        fontSize: valueFontSize ?? 24,
+                        fontWeight: FontWeight.bold,
+                        color: color,
+                        overflow: TextOverflow.ellipsis
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis
+                    ),
+                  ),
+                ),
+              ],
             ),
 
 
