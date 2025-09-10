@@ -22,7 +22,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       title: 'Bienvenue sur Anacarde Bénin',
       description:
           'La plateforme qui connecte les producteurs d\'anacarde aux investisseurs pour développer l\'économie locale.',
-      icon: Icons.eco,
+      //icon: Icons.eco,
+      child: CircleAvatar(
+        //borderRadius: BorderRadiusGeometry.circular(1000),
+        backgroundImage: AssetImage(
+          //height: 50,
+          "assets/images/cashew.png",),
+      ),
       color: AppColors.primary,
     ),
     OnboardingSlide(
@@ -179,7 +185,11 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               color: slide.color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(60),
             ),
-            child: Icon(slide.icon, size: 60, color: slide.color),
+            child:
+            slide.icon != null
+            ? Icon(slide.icon, size: 60, color: slide.color)
+            : slide.child
+            ,
           ),
 
           const SizedBox(height: 48),
@@ -217,13 +227,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 class OnboardingSlide {
   final String title;
   final String description;
-  final IconData icon;
+  final IconData? icon;
+  final Widget? child;
   final Color color;
 
   OnboardingSlide({
     required this.title,
     required this.description,
-    required this.icon,
+    this.icon,
+    this.child,
     required this.color,
   });
 }

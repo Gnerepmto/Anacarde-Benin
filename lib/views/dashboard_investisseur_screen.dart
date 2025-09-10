@@ -685,8 +685,8 @@ class _ProfileTab extends StatelessWidget {
             onPressed: () {
               Navigator.pushAndRemoveUntil(
                 context,
-                MaterialPageRoute(builder: (context) =>  ChoixProfilScreen()),
-                    (route) => false,
+                MaterialPageRoute(builder: (context) => ChoixProfilScreen()),
+                (route) => false,
               );
 
               //Provider.of<AuthProvider>(context, listen: false).logout();
